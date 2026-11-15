@@ -2,6 +2,8 @@
 
 A fictional news publication built with **Next.js 16** (App Router, Cache Components) for the Next.js Foundations certification assignment.
 
+**Live:** https://vercel-daily-gray.vercel.app
+
 ## Run it locally
 
 ```bash
