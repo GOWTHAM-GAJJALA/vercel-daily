@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useOptimistic, useTransition } from "react";
 import { subscribe, unsubscribe } from "@/app/actions";
 
@@ -9,10 +9,14 @@ type Variant = "header" | "cta";
 /**
  * Subscribe / unsubscribe control.
  *
- * Calls a Server Action to set or clear the subscription cookie, then
- * refreshes the router so proxy.ts re-evaluates the paywall and every
- * server-rendered subscription indicator updates. useOptimistic flips the
- * UI immediately while the action is in flight.
+ * Calls a Server Action to set or clear the subscription cookie. The action
+ * calls refresh(), so every server-rendered subscription indicator updates.
+ * useOptimistic flips the UI immediately while the action is in flight.
+ *
+ * On article pages, a refresh alone isn't enough. proxy.ts serves the same
+ * URL from a different route (the /preview paywall vs the full article),
+ * and an in-place refresh keeps the route the router already has. A
+ * same-URL replace navigation makes the proxy route the request again.
  */
 export function SubscriptionToggle({
   subscribed,
@@ -22,6 +26,7 @@ export function SubscriptionToggle({
   variant?: Variant;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [optimisticSubscribed, setOptimisticSubscribed] =
     useOptimistic(subscribed);
@@ -34,7 +39,9 @@ export function SubscriptionToggle({
       } else {
         await subscribe();
       }
-      router.refresh();
+      if (pathname.startsWith("/articles/")) {
+        router.replace(pathname, { scroll: false });
+      }
     });
   }
 

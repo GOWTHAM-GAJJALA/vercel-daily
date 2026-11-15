@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { cookies } from "next/headers";
 import {
   createSubscriptionToken,
@@ -21,6 +22,7 @@ export async function subscribe(): Promise<{ subscribed: true }> {
     secure: process.env.NODE_ENV === "production",
     path: "/",
   });
+  refresh();
   return { subscribed: true };
 }
 
@@ -28,5 +30,6 @@ export async function subscribe(): Promise<{ subscribed: true }> {
 export async function unsubscribe(): Promise<{ subscribed: false }> {
   const cookieStore = await cookies();
   cookieStore.delete(SUBSCRIPTION_COOKIE);
+  refresh();
   return { subscribed: false };
 }
